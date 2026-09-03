@@ -2,6 +2,7 @@ services:
   - type: web
     name: ashare-radar
     runtime: node
+    plan: free
     repo: https://github.com/jackylin8111-bit/ashare-radar
     branch: main
     buildCommand: npm ci && npm run build
