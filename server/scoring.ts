@@ -1,22 +1,18 @@
 import type { Bucket, Lifecycle, Theme } from '../shared/types.ts';
 
-export function classify(score:number, persistence:number, fiveDayPct:number): Bucket {
-  if (score >= 75 && persistence >= 12) return 'earning';
-  if (score >= 60) return 'preparing';
-  if (score < 60 && fiveDayPct < 0) return 'past';
-  return 'preparing';
-}
-export function inferLifecycle(theme: Theme): Lifecycle {
-  if (theme.fiveDayPct > 15 && theme.dayPct > 5) return '高潮';
-  if (theme.dayPct < -1.5 && theme.fiveDayPct < 0) return '退潮';
-  if (theme.dayPct < 0 && theme.fiveDayPct > 5) return '分歧';
-  if (theme.score >= 80) return '主升';
-  if (theme.score >= 60) return '发酵';
-  return theme.lifecycle;
-}
-export function normalizeTheme(theme:Theme):Theme {
-  const d=theme.dimensions;
-  const score=Math.max(0,Math.min(100,d.capital+d.profit+d.core+d.persistence+d.catalyst));
-  const normalized={...theme,score};
-  return {...normalized,bucket:classify(score,d.persistence,theme.fiveDayPct),lifecycle:inferLifecycle(normalized)};
+const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n));
+export const scale=(value:number,min:number,max:number,points:number)=>Math.round(clamp((value-min)/(max-min),0,1)*points);
+export const classify=(score:number):Bucket=>score>=70?'earning':score>=48?'preparing':'past';
+export const lifecycle=(day:number,five:number,breadth:number):Lifecycle=>{
+  if(five>8&&day>2&&breadth>=.75)return '高潮';
+  if(five>4&&day>0&&breadth>=.5)return '主升';
+  if(five>0&&day>0)return '发酵';
+  if(five>3&&day<=0)return '分歧';
+  if(five<0&&day>0)return '二波';
+  return '退潮';
+};
+export function normalizeTheme(theme:Theme):Theme{
+  const available=theme.dimensions.capital+theme.dimensions.profit+theme.dimensions.core+theme.dimensions.persistence;
+  const score=Math.round(available/90*100);
+  return {...theme,score,bucket:classify(score)};
 }
