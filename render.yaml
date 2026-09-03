@@ -5,7 +5,7 @@ services:
     plan: free
     repo: https://github.com/jackylin8111-bit/ashare-radar
     branch: main
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeployTrigger: commit
