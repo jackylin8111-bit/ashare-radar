@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: ashare-radar-jackylin8111
+    runtime: node
+    plan: free
+    repo: https://github.com/jackylin8111-bit/ashare-radar
+    branch: main
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
