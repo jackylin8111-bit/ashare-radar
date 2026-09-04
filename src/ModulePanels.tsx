@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import type { DashboardPayload, Lifecycle, Stock } from '../shared/types';
 
 const pct=(n:number|null)=>n===null?'—':`${n>0?'+':''}${n.toFixed(2)}%`;
@@ -12,7 +12,7 @@ function PanelHeader({title,description,badge}:{title:string;description:string;
 export function MarketOverview({data}:{data:DashboardPayload}){
   return <section className="feature-panel module-panel"><PanelHeader title="市场总览" description="三大指数与数据源健康状态" badge={data.market.stale?'缓存数据':'真实行情'}/>
     <div className="index-grid">{data.market.indices.map(index=><article key={index.code}><span>{index.name}</span><b>{number(index.last)}</b><em className={tone(index.changePct??0)}>{pct(index.changePct)}</em><small>{index.code}</small></article>)}</div>
-    <div className="source-list"><b>行情时间</b><span>{data.market.asOf?new Date(data.market.asOf).toLocaleString('zh-CN',{hour12:false}):'未取得'}</span><b>观察范围</b><span>{data.market.scope}</span>{data.market.sources.map(source=><><b key={`${source.dataset}-b`}>{source.provider}</b><span key={`${source.dataset}-s`}>{source.dataset} · {source.state} · {source.message}</span></>)}</div>
+    <div className="source-list"><b>行情时间</b><span>{data.market.asOf?new Date(data.market.asOf).toLocaleString('zh-CN',{hour12:false}):'未取得'}</span><b>观察范围</b><span>{data.market.scope}</span>{data.market.sources.map(source=><Fragment key={`${source.provider}-${source.dataset}`}><b>{source.provider}</b><span>{source.dataset} · {source.state} · {source.message}</span></Fragment>)}</div>
   </section>;
 }
 

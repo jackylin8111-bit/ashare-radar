@@ -18,7 +18,11 @@ export interface Theme {
   dimensions: { capital: number; profit: number; core: number; persistence: number; catalyst: number };
   leader: string; capacityCore: string; trigger: string; invalidation: string; constituentCount: number; sourceNote: string;
 }
-export interface Stock { code: string; name: string; theme: string; role: string; last: number | null; changePct: number; fiveDayPct: number | null; amountYi: number | null; quoteTime: string | null; score: number; reason: string; }
+export interface Stock {
+  code: string; name: string; theme: string; role: string; last: number | null; changePct: number;
+  fiveDayPct: number | null; twentyDayPct: number | null; maxDrawdown20Pct: number | null;
+  amountYi: number | null; quoteTime: string | null; score: number; reason: string;
+}
 export interface Position { code: string; name: string; theme: string; quantity: number; cost: number | null; last: number | null; state: string; reviewTrigger: string; }
 export interface DailyReview { tradeDate: string | null; title: string; scope: string; advances: number | null; declines: number | null; limitUp: number | null; limitDown: number | null; topThemes: {name:string;dayPct:number;score:number}[]; notes: string[]; }
 export interface DashboardPayload { market: MarketSnapshot; themes: Theme[]; stocks: Stock[]; positions: Position[]; dailyReview: DailyReview; }
