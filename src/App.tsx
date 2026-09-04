@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Activity, BellRing, BookOpenCheck, BrainCircuit, ChartNoAxesCombined, CircleDollarSign, Gauge, History, LayoutDashboard, RefreshCw, ShieldCheck, Target, WalletCards } from 'lucide-react';
 import type { Bucket, DashboardPayload, Theme } from '../shared/types';
 import { getDashboard } from './api';
+import { CapitalMigration, CorePool, CounterTrend, LifecyclePanel, MarketOverview, ProfitEffect } from './ModulePanels';
 
 const nav=[['市场总览',LayoutDashboard],['赚钱效应',CircleDollarSign],['板块生命周期',History],['核心股池',Target],['逆势强度',ShieldCheck],['资金迁移',ChartNoAxesCombined],['我的持仓',WalletCards],['盘中预警',BellRing],['每日复盘',BookOpenCheck],['历史回测',Gauge],['月度候选',Activity],['AI分析',BrainCircuit]] as const;
 const bucketMeta:Record<Bucket,{title:string;hint:string}>={earning:{title:'正在赚钱',hint:'高分且持续性确认'},preparing:{title:'准备赚钱',hint:'观察下一节点确认'},past:{title:'过去赚过',hint:'退潮与失败样本保留'}};
@@ -19,6 +20,12 @@ function ThemeColumn({bucket,themes}:{bucket:Bucket;themes:Theme[]}){
   </section>;
 }
 function FeaturePanel({active,data}:{active:string;data:DashboardPayload}){
+  if(active==='市场总览') return <MarketOverview data={data}/>;
+  if(active==='赚钱效应') return <ProfitEffect data={data}/>;
+  if(active==='板块生命周期') return <LifecyclePanel data={data}/>;
+  if(active==='核心股池') return <CorePool data={data}/>;
+  if(active==='逆势强度') return <CounterTrend data={data}/>;
+  if(active==='资金迁移') return <CapitalMigration data={data}/>;
   if(active==='我的持仓') return <section className="feature-panel"><header><div><h2>我的持仓</h2><p>只有用户确认的数据才参与账户评估</p></div><span>未连接券商 · 不执行交易</span></header>{data.positions.map(p=><div className="position-row" key={p.code}><b>{p.name}</b><span>{p.theme}</span><span>数量 {p.quantity}</span><span>成本 {p.cost??'未录入'}</span><em>{p.state}</em><small>{p.reviewTrigger}</small></div>)}</section>;
   if(active==='每日复盘') return <section className="feature-panel"><header><div><h2>{data.dailyReview.title}</h2><p>{data.dailyReview.scope}</p></div><span>最近完整行情日 · 非全市场统计</span></header><div className="analysis-grid"><article><span>观察池涨跌</span><b>{value(data.dailyReview.advances)} / {value(data.dailyReview.declines)}</b><p>上涨家数 / 下跌家数</p></article><article><span>观察池涨跌停</span><b>{value(data.dailyReview.limitUp)} / {value(data.dailyReview.limitDown)}</b><p>按股票板块涨跌幅阈值估算</p></article><article><span>强度前三</span><b>{data.dailyReview.topThemes.map(t=>t.name).join('、')||'未取得'}</b><p>{data.dailyReview.topThemes.map(t=>`${t.name} ${pct(t.dayPct)}`).join('；')}</p></article><article><span>数据边界</span><b>缺失项不填零</b><p>{data.dailyReview.notes.at(-1)}</p></article></div></section>;
   if(active==='AI分析'){const top=data.themes[0];return <section className="feature-panel"><header><div><h2>AI分析</h2><p>事实、推断、触发与失效条件分离</p></div><span>研究草稿 · 非交易指令</span></header><div className="analysis-grid"><article><span>事实</span><b>{top?`${top.name}评分 ${top.score}`:'真实行情未取得'}</b><p>{top?`观察池日涨幅 ${pct(top.dayPct)}，5日 ${pct(top.fiveDayPct)}。`:'等待数据源恢复。'}</p></article><article><span>推断</span><b>{top?`${top.lifecycle}阶段相对领先`:'暂不判断'}</b><p>只代表固定观察池，不代表全市场。</p></article><article><span>研究动作</span><b>等待节点确认</b><p>{top?.trigger||'等待真实数据。'}</p></article><article><span>失效条件</span><b>条件触发后降级</b><p>{top?.invalidation||'等待真实数据。'}</p></article></div></section>}
