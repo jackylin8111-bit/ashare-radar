@@ -4,6 +4,17 @@ export type Bucket = 'earning' | 'preparing' | 'past';
 
 export interface EvidenceField<T> { value: T | null; state: DataState; source: string; note?: string; }
 export interface SourceStatus { provider: string; dataset: string; state: DataState; asOf: string | null; message: string; }
+export interface BoardStock { code: string; name: string; sector: string | null; boards: number | null; changePct: number | null; amountYi: number | null; }
+export interface SectorFlow { code: string; name: string; kind: 'industry' | 'concept'; changePct: number | null; mainNetYi: number | null; mainNetPct: number | null; }
+export interface LhbItem { code: string; name: string; reason: string; totalNetYi: number | null; buyYi: number | null; sellYi: number | null; turnoverYi: number | null; seatSummary: string | null; }
+export interface AutoMarketData {
+  asOf: string | null; tradeDate: string | null; stale: boolean;
+  breadth: { advances: number | null; declines: number | null; flat: number | null; total: number | null };
+  limit: { up: number | null; down: number | null; broken: number | null; sealRate: number | null; highestBoard: number | null; ladder: Record<string,number>; leaders: BoardStock[] };
+  sectorFlows: SectorFlow[]; lhb: LhbItem[];
+  northbound: EvidenceField<number>; publicFundHolding: EvidenceField<number>;
+  sources: SourceStatus[];
+}
 export interface IndexQuote { name: string; code: string; last: number | null; changePct: number | null; }
 export interface MarketSnapshot {
   asOf: string | null; tradeDate: string | null; mode: 'real' | 'unavailable'; stale: boolean; completeness: number; scope: string;
@@ -25,4 +36,4 @@ export interface Stock {
 }
 export interface Position { code: string; name: string; theme: string; quantity: number; cost: number | null; last: number | null; state: string; reviewTrigger: string; }
 export interface DailyReview { tradeDate: string | null; title: string; scope: string; advances: number | null; declines: number | null; limitUp: number | null; limitDown: number | null; topThemes: {name:string;dayPct:number;score:number}[]; notes: string[]; }
-export interface DashboardPayload { market: MarketSnapshot; themes: Theme[]; stocks: Stock[]; positions: Position[]; dailyReview: DailyReview; }
+export interface DashboardPayload { market: MarketSnapshot; themes: Theme[]; stocks: Stock[]; positions: Position[]; dailyReview: DailyReview; autoData: AutoMarketData; }

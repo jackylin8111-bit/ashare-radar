@@ -6,4 +6,5 @@ import './styles.css';
 import './feature.css';
 import './modules.css';
 import './dual-flow.css';
+import './auto-flow.css';
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><BrowserRouter><App/></BrowserRouter></React.StrictMode>);
