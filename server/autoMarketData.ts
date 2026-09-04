@@ -45,6 +45,18 @@ async function loadSectorKind(kind:'industry'|'concept'){
   throw new Error(lastError);
 }
 
+const trackedSectorCodes=['BK1629','BK1090','BK1128','BK1106','BK0890','BK1137'];
+async function loadTrackedSectorFlows(){
+  const items=await Promise.all(trackedSectorCodes.map(async code=>{const payload=await json<{data?:{code?:string;name?:string;klines?:string[]}}>(`https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?lmt=1&klt=101&secid=90.${code}&fields1=f1,f2,f3,f7&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63`,10_000),line=payload.data?.klines?.[0];if(!line)throw new Error(`${code} 资金数据为空`);const fields=line.split(',');return {code:payload.data?.code||code,name:payload.data?.name||code,kind:'concept' as const,changePct:numberOrNull(fields[12]),mainNetYi:yi(fields[1]),mainNetPct:numberOrNull(fields[6])}}));
+  return items.sort((a,b)=>(b.mainNetYi??-Infinity)-(a.mainNetYi??-Infinity));
+}
+
+async function loadSectors(){
+  const ranked=await Promise.allSettled([loadSectorKind('industry'),loadSectorKind('concept')]),items=ranked.flatMap(result=>result.status==='fulfilled'?result.value:[]);
+  if(items.length)return {items,message:`自动取得行业/概念资金排行 ${items.length} 条；供应商定义口径`};
+  const tracked=await loadTrackedSectorFlows();return {items:tracked,message:'排行接口不可用，已改用固定6主题板块的真实当日资金流；不代表全市场排名'};
+}
+
 async function loadLhb(tradeDate:string){
   const url=`https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_DAILYBILLBOARD_DETAILSNEW&columns=ALL&filter=(TRADE_DATE='${tradeDate}')&pageNumber=1&pageSize=80&sortColumns=BILLBOARD_NET_AMT&sortTypes=-1&source=WEB&client=WEB`,payload=await json<{result?:{data?:JsonRecord[]}}>(url),data=payload.result?.data||[];
   return data.slice(0,30).map((item):LhbItem=>({code:String(item.SECURITY_CODE||''),name:String(item.SECURITY_NAME_ABBR||'未知'),reason:String(item.EXPLANATION||'未注明'),totalNetYi:yi(item.BILLBOARD_NET_AMT),buyYi:yi(item.BILLBOARD_BUY_AMT),sellYi:yi(item.BILLBOARD_SELL_AMT),turnoverYi:yi(item.ACCUM_AMOUNT),seatSummary:item.EXPLAIN?String(item.EXPLAIN):null}));
@@ -53,10 +65,10 @@ async function loadLhb(tradeDate:string){
 let lastGood:AutoMarketData|null=null,lastAttempt=0,pending:Promise<AutoMarketData>|null=null;
 export async function loadAutoMarketData(tradeDate:string|null,force=false):Promise<AutoMarketData>{
   if(!tradeDate)return empty(null);if(!force&&lastGood?.tradeDate===tradeDate&&Date.now()-lastAttempt<5*60_000)return lastGood;if(pending)return pending;lastAttempt=Date.now();
-  pending=(async()=>{const next=empty(tradeDate),stamp=now(),[breadth,limits,sectors,lhb]=await Promise.allSettled([loadBreadth(),loadLimits(tradeDate),Promise.all([loadSectorKind('industry'),loadSectorKind('concept')]).then(items=>items.flat()),loadLhb(tradeDate)]);
+  pending=(async()=>{const next=empty(tradeDate),stamp=now(),[breadth,limits,sectors,lhb]=await Promise.allSettled([loadBreadth(),loadLimits(tradeDate),loadSectors(),loadLhb(tradeDate)]);
     if(breadth.status==='fulfilled'){next.breadth=breadth.value;next.sources.push(source('新浪财经','全A股涨跌家数','real',stamp,`自动分页统计 ${breadth.value.total} 只`))}else next.sources.push(source('新浪财经','全A股涨跌家数','unavailable',stamp,breadth.reason?.message||String(breadth.reason)));
     if(limits.status==='fulfilled'){next.limit=limits.value;next.sources.push(source('东方财富','涨停/跌停/炸板池','real',stamp,'公开专题池自动抓取；封板率按涨停数/(涨停数+炸板数)计算'))}else next.sources.push(source('东方财富','涨停/跌停/炸板池','unavailable',stamp,limits.reason?.message||String(limits.reason)));
-    if(sectors.status==='fulfilled'){next.sectorFlows=sectors.value;next.sources.push(source('东方财富Choice数据','行业/概念主力资金流','real',stamp,'供应商定义口径，不等同审计意义资金流'))}else next.sources.push(source('东方财富Choice数据','行业/概念主力资金流','unavailable',stamp,sectors.reason?.message||String(sectors.reason)));
+    if(sectors.status==='fulfilled'){next.sectorFlows=sectors.value.items;next.sources.push(source('东方财富Choice数据','行业/概念主力资金流','real',stamp,sectors.value.message))}else next.sources.push(source('东方财富Choice数据','行业/概念主力资金流','unavailable',stamp,sectors.reason?.message||String(sectors.reason)));
     if(lhb.status==='fulfilled'){next.lhb=lhb.value;next.sources.push(source('东方财富龙虎榜','龙虎榜汇总','real',stamp,lhb.value.length?`自动取得 ${lhb.value.length} 条披露`:'当日暂无披露记录'))}else next.sources.push(source('东方财富龙虎榜','龙虎榜汇总','unavailable',stamp,lhb.reason?.message||String(lhb.reason)));
     next.asOf=stamp;next.stale=false;
     if(lastGood?.tradeDate===tradeDate){for(const status of next.sources.filter(item=>item.state==='unavailable')){const old=lastGood.sources.find(item=>item.dataset===status.dataset&&item.state==='real');if(!old)continue;if(status.dataset==='全A股涨跌家数')next.breadth=lastGood.breadth;if(status.dataset==='涨停/跌停/炸板池')next.limit=lastGood.limit;if(status.dataset==='行业/概念主力资金流')next.sectorFlows=lastGood.sectorFlows;if(status.dataset==='龙虎榜汇总')next.lhb=lastGood.lhb;status.state='estimated';status.message=`本次失败，沿用最近成功缓存：${status.message}`;next.stale=true}}
