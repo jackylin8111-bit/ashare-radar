@@ -26,7 +26,7 @@ type Workspace=ReturnType<typeof useLocalWorkspace>;
 function FeaturePanel({active,data,workspace}:{active:string;data:DashboardPayload;workspace:Workspace}){
   if(active==='市场总览') return <MarketOverview data={data}/>;
   if(active==='赚钱效应') return <ProfitEffect data={data}/>;
-  if(active==='板块生命周期') return <LifecyclePanel data={data}/>;
+  if(active==='板块生命周期') return <LifecyclePanel data={data} holdings={workspace.holdings}/>;
   if(active==='核心股池') return <CorePool data={data}/>;
   if(active==='逆势强度') return <CounterTrend data={data}/>;
   if(active==='资金迁移') return <CapitalMigration data={data}/>;
