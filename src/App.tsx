@@ -6,6 +6,7 @@ import { CapitalMigration, CorePool, CounterTrend, LifecyclePanel, MarketOvervie
 import { AlertsPanel, BacktestPanel, DailyReviewPanel, HoldingsPanel, MonthlyCandidatesPanel, WatchlistPanel } from './WorkspacePanels';
 import { useLocalWorkspace } from './useLocalWorkspace';
 import { DualFlowPanel } from './DualFlowPanels';
+import { MainlineMap } from './MainlineMap';
 
 const nav=[['市场总览',LayoutDashboard],['赚钱效应',CircleDollarSign],['板块生命周期',History],['核心股池',Target],['逆势强度',ShieldCheck],['资金迁移',ChartNoAxesCombined],['超短游资',Flame],['价值投机',TrendingUp],['我的持仓',WalletCards],['我的自选',Star],['盘中预警',BellRing],['每日复盘',BookOpenCheck],['历史回测',Gauge],['月度候选',Activity],['AI分析',BrainCircuit]] as const;
 const bucketMeta:Record<Bucket,{title:string;hint:string}>={earning:{title:'正在赚钱',hint:'高分且持续性确认'},preparing:{title:'准备赚钱',hint:'观察下一节点确认'},past:{title:'过去赚过',hint:'退潮与失败样本保留'}};
@@ -26,7 +27,7 @@ type Workspace=ReturnType<typeof useLocalWorkspace>;
 function FeaturePanel({active,data,workspace}:{active:string;data:DashboardPayload;workspace:Workspace}){
   if(active==='市场总览') return <MarketOverview data={data}/>;
   if(active==='赚钱效应') return <ProfitEffect data={data}/>;
-  if(active==='板块生命周期') return <LifecyclePanel data={data} holdings={workspace.holdings}/>;
+  if(active==='板块生命周期') return <><LifecyclePanel data={data} holdings={workspace.holdings}/><MainlineMap data={data} onWatch={workspace.addWatch} onObserve={workspace.addCandidateAlert}/></>;
   if(active==='核心股池') return <CorePool data={data}/>;
   if(active==='逆势强度') return <CounterTrend data={data}/>;
   if(active==='资金迁移') return <CapitalMigration data={data}/>;

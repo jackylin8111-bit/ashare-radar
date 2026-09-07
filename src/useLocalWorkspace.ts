@@ -35,6 +35,12 @@ export function useLocalWorkspace(){
     update(current=>({...current,alerts:[...current.alerts.filter(item=>!alerts.some(next=>next.id===item.id)),...alerts]}));
     return alerts.length;
   };
+  const addCandidateAlert=(theme:Theme,stock:Stock)=>{
+    if(!theme.id)return false;
+    const sourceDate=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Shanghai'}),targetDate=nextTradingDay(sourceDate),id=`manual:${sourceDate}:${theme.id}:${stock.code}`;
+    update(current=>({...current,alerts:[...current.alerts.filter(item=>item.id!==id),{id,targetDate,sourceReviewDate:sourceDate,theme:theme.name,stock:stock.name,trigger:`${theme.trigger}；候选角色需在下个节点继续确认`,invalidation:theme.invalidation,status:'观察中',createdAt:new Date().toISOString()}]}));
+    return true;
+  };
   const setAlertStatus=(id:string,status:NextDayAlert['status'])=>update(current=>({...current,alerts:current.alerts.map(item=>item.id===id?{...item,status}:item)}));
-  return {...state,addHolding,removeHolding,addWatch,removeWatch,generateAlerts,setAlertStatus};
+  return {...state,addHolding,removeHolding,addWatch,removeWatch,generateAlerts,addCandidateAlert,setAlertStatus};
 }
