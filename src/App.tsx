@@ -7,8 +7,9 @@ import { AlertsPanel, BacktestPanel, DailyReviewPanel, HoldingsPanel, MonthlyCan
 import { useLocalWorkspace } from './useLocalWorkspace';
 import { DualFlowPanel } from './DualFlowPanels';
 import { MainlineMap } from './MainlineMap';
+import { ValueSpeculationV2 } from './ValueSpeculationV2';
 
-const nav=[['市场总览',LayoutDashboard],['赚钱效应',CircleDollarSign],['板块生命周期',History],['核心股池',Target],['逆势强度',ShieldCheck],['资金迁移',ChartNoAxesCombined],['超短游资',Flame],['价值投机',TrendingUp],['我的持仓',WalletCards],['我的自选',Star],['盘中预警',BellRing],['每日复盘',BookOpenCheck],['历史回测',Gauge],['月度候选',Activity],['AI分析',BrainCircuit]] as const;
+const nav=[['市场总览',LayoutDashboard],['赚钱效应',CircleDollarSign],['板块生命周期',History],['核心股池',Target],['逆势强度',ShieldCheck],['资金迁移',ChartNoAxesCombined],['超短游资',Flame],['价值投机V2',TrendingUp],['我的持仓',WalletCards],['我的自选',Star],['盘中预警',BellRing],['每日复盘',BookOpenCheck],['历史回测',Gauge],['月度候选',Activity],['AI分析',BrainCircuit]] as const;
 const bucketMeta:Record<Bucket,{title:string;hint:string}>={earning:{title:'正在赚钱',hint:'高分且持续性确认'},preparing:{title:'准备赚钱',hint:'观察下一节点确认'},past:{title:'过去赚过',hint:'退潮与失败样本保留'}};
 const pct=(n:number|null)=>n===null?'—':`${n>0?'+':''}${n.toFixed(2)}%`;
 const value=(n:number|null)=>n===null?'—':n.toLocaleString();
@@ -32,7 +33,7 @@ function FeaturePanel({active,data,workspace}:{active:string;data:DashboardPaylo
   if(active==='逆势强度') return <CounterTrend data={data}/>;
   if(active==='资金迁移') return <CapitalMigration data={data}/>;
   if(active==='超短游资') return <DualFlowPanel mode="short" data={data}/>;
-  if(active==='价值投机') return <DualFlowPanel mode="value" data={data}/>;
+  if(active==='价值投机V2') return <ValueSpeculationV2 data={data}/>;
   if(active==='我的持仓') return <HoldingsPanel data={data} holdings={workspace.holdings} onAdd={workspace.addHolding} onRemove={workspace.removeHolding}/>;
   if(active==='我的自选') return <WatchlistPanel data={data} watchlist={workspace.watchlist} onAdd={workspace.addWatch} onRemove={workspace.removeWatch}/>;
   if(active==='盘中预警') return <AlertsPanel alerts={workspace.alerts} onStatus={workspace.setAlertStatus}/>;

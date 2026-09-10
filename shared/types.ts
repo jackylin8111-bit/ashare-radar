@@ -1,5 +1,7 @@
 export type DataState = 'real' | 'estimated' | 'unavailable';
 export type Lifecycle = '启动' | '发酵' | '主升' | '高潮' | '分歧' | '退潮' | '二波';
+export type ValueLifecycle = '观察' | '启动' | '发酵' | '主升' | '加速' | '第一次大分歧' | '二波' | '高潮' | '退潮';
+export type EvidenceGrade = 'S' | 'A' | 'B' | 'C' | 'D' | '未评估';
 export type Bucket = 'earning' | 'preparing' | 'past';
 
 export interface EvidenceField<T> { value: T | null; state: DataState; source: string; note?: string; }
@@ -31,7 +33,9 @@ export interface Theme {
 }
 export interface Stock {
   code: string; name: string; theme: string; role: string; last: number | null; changePct: number;
-  fiveDayPct: number | null; twentyDayPct: number | null; maxDrawdown20Pct: number | null;
+  threeDayPct: number | null; fiveDayPct: number | null; tenDayPct: number | null; twentyDayPct: number | null; sixtyDayPct: number | null;
+  ma5: number | null; ma10: number | null; ma20: number | null; newHigh20: boolean | null; higherLows20: boolean | null;
+  maxDrawdown20Pct: number | null;
   amountYi: number | null; quoteTime: string | null; score: number; reason: string;
 }
 export interface Position { code: string; name: string; theme: string; quantity: number; cost: number | null; last: number | null; state: string; reviewTrigger: string; }

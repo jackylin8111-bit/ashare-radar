@@ -58,7 +58,7 @@ export function LifecyclePanel({data,holdings=[]}:{data:DashboardPayload;holding
         :{label:'进攻观察',detail:'可以寻找机会，但仍服从生命周期',tone:'buy' as ActionTone};
   const topGuide=topTheme?stageGuides[topTheme.lifecycle]:null;
   const finalAction=marketGate.tone==='risk'||marketGate.tone==='wait'?marketGate.label:topTheme?.lifecycle==='高潮'||topTheme?.lifecycle==='退潮'?'禁止新仓':'等待条件确认';
-  return <section className="feature-panel module-panel lifecycle-panel"><PanelHeader title="板块生命周期" description="先看市场许可，再按阶段决定新仓与持仓动作" badge="7阶段动作模型"/>
+  return <section className="feature-panel module-panel lifecycle-panel"><PanelHeader title="板块生命周期（短线辅助）" description="这是短线七阶段辅助模型；价值投机的观察、启动、发酵、主升、加速、第一次大分歧、二波、高潮、退潮，请在“价值投机V2”查看。" badge="短线7阶段"/>
     <div className="decision-summary">
       <article className={`action-${marketGate.tone}`}><span>① 市场闸门</span><b>{marketGate.label}</b><p>{marketGate.detail}</p></article>
       <article className={topGuide?`action-${topGuide.tone}`:'action-wait'}><span>② 所选观察方向</span><b>{topTheme?`${topTheme.name} · ${topTheme.lifecycle}`:'暂无可判断主题'}</b><p>阶段为模型推断，非已确认买点</p></article>
@@ -80,7 +80,7 @@ export function LifecyclePanel({data,holdings=[]}:{data:DashboardPayload;holding
       {themes.length?<div className="stage-themes">{themes.map(theme=><span key={theme.id}><b>{theme.name}</b><small>{theme.score}分 · 当日 {pct(theme.dayPct)} · 5日 {pct(theme.fiveDayPct)}</small></span>)}</div>:null}
     </article>})}</div>
     <SignalJournal data={data}/>
-    <p className="lifecycle-disclaimer">以上七阶段为通用规则，不表示条件已满足，也不必按顺序发展。历史快照仅供复盘；缺失证据不生成买入许可。</p>
+    <p className="lifecycle-disclaimer">以上七阶段只服务短线节奏，不表示条件已满足，也不必按顺序发展。价值投机研究以V2九阶段、产业证据和20日资金主线为准；历史快照仅供复盘，缺失证据不生成买入许可。</p>
   </section>;
 }
 
